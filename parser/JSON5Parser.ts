@@ -1,13 +1,11 @@
-import {
-  JSON5Array,
-  JSON5ArrayElement,
-  JSON5Document,
-  JSON5Literal,
-  JSON5Object,
-  JSON5ObjectEntry,
-  type JSON5Value,
-  type WhiteSpaceOrComment,
-} from './index';
+import { JSON5Document } from '../model/JSON5Document';
+import { JSON5Object } from '../model/JSON5Object';
+import { JSON5ObjectEntry } from '../model/JSON5ObjectEntry';
+import { JSON5Array } from '../model/JSON5Array';
+import { JSON5ArrayElement } from '../model/JSON5ArrayElement';
+import { JSON5Literal } from '../model/JSON5Literal';
+import type { JSON5Value } from '../model/JSON5Value';
+import type { WhiteSpaceOrComment } from '../model/whiteSpaceOrComment';
 
 /***********************************************************************
  * JSON5Parser: a recursive-descent parser that preserves formatting.

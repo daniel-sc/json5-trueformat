@@ -2,12 +2,10 @@
  * Bun Tests
  ***********************************************************************/
 import { expect, test } from 'bun:test';
-import {
-  JSON5Literal,
-  JSON5Object,
-  JSON5ObjectEntry,
-  parseJSON5,
-} from './index';
+import { parseJSON5 } from '../index';
+import { JSON5Object } from '../model/JSON5Object';
+import { JSON5ObjectEntry } from '../model/JSON5ObjectEntry';
+import { JSON5Literal } from '../model/JSON5Literal';
 
 test('Round-trip: Simple JSON5 literal', () => {
   const input = '  true  ';
