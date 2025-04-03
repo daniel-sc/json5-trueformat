@@ -1,0 +1,43 @@
+{
+  "name": "json5-trueformat",
+  "version": "0.0.1",
+  "description": "JSON/JSON5 parser that 100% retains all formatting for creating identical files on roundtrips",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
+  "license": "MIT",
+  "scripts": {
+    "build:types": "tsc --emitDeclarationOnly",
+    "build:esm": "bun build index.ts --outdir dist/esm --format=esm --dts",
+    "build:cjs": "bun build index.ts --outdir dist/cjs --format=cjs",
+    "test": "bun test --coverage",
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit",
+    "prepack": "bun run build:types && bun run build:esm && bun run build:cjs"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.3",
+    "prettier": "3.5.2",
+    "typescript": "^5.7.3"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "keywords": [
+    "json",
+    "json5",
+    "typescript"
+  ],
+  "author": "Daniel Schreiber <daniel-schreiber@gmx.de>",
+  "homepage": "https://github.com/daniel-sc/json5-trueformat",
+  "bugs": {
+    "url": "https://github.com/daniel-sc/json5-trueformat/issues"
+  }
+}

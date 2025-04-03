@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    // Environment setup & latest features
+    "lib": ["esnext"],
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleDetection": "force",
+
+    // Bundler mode
+    "moduleResolution": "bundler",
+    //"allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    //"noEmit": true,
+    "declaration": true /* Generate .d.ts files from TypeScript and JavaScript files in your project. */,
+    "emitDeclarationOnly": true /* Only output d.ts files and not JavaScript files. */,
+    "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */,
+    "outDir": "./dist/types" /* Specify an output folder for all emitted files. */,
+
+    // Best practices
+    "strict": true,
+    "skipLibCheck": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+
+    // Some stricter flags (disabled by default)
+    "noUnusedLocals": true,
+    "noUnusedParameters": false,
+    "noPropertyAccessFromIndexSignature": true
+  }
+}
