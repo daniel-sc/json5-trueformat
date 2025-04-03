@@ -7,22 +7,32 @@ import { JSON5Literal } from '../model/JSON5Literal';
 import type { JSON5Value } from '../model/JSON5Value';
 import type { WhiteSpaceOrComment } from '../model/whiteSpaceOrComment';
 
-/***********************************************************************
+/**
  * JSON5Parser: a recursive-descent parser that preserves formatting.
- ***********************************************************************/
+ */
 export class JSON5Parser {
   pos: number = 0;
   length: number;
 
+  /**
+   * @param {string} text - The JSON5 string to parse.
+   */
   constructor(public text: string) {
     this.length = text.length;
   }
 
+  /**
+   * Check if the parser has reached the end of the input.
+   * @returns {boolean} - True if end of input, otherwise false.
+   */
   eof(): boolean {
     return this.pos >= this.length;
   }
 
-  /** Parse the entire document */
+  /**
+   * Parse the entire document.
+   * @returns {JSON5Document} - The parsed JSON5 document.
+   */
   parseDocument(): JSON5Document {
     const pre = this.parseWS();
     const value = this.parseValue();
@@ -30,7 +40,10 @@ export class JSON5Parser {
     return new JSON5Document(pre, value, post);
   }
 
-  /** Parse whitespace and comments (both // and /* ... * /), returning the exact text. */
+  /**
+   * Parse whitespace and comments (both // and /* ... * /), returning the exact text.
+   * @returns {string} - The parsed whitespace and comments.
+   */
   parseWS(): string {
     const start = this.pos;
     while (!this.eof()) {
@@ -55,7 +68,9 @@ export class JSON5Parser {
     return this.text.substring(start, this.pos);
   }
 
-  /** Parse a comment (either // or /* ... * /). */
+  /**
+   * Parse a comment (either // or /* ... * /).
+   */
   parseComment(): void {
     if (this.text[this.pos] === '/' && this.text[this.pos + 1] === '/') {
       this.pos += 2;
@@ -84,7 +99,10 @@ export class JSON5Parser {
     }
   }
 
-  /** Parse a JSON5 value: object, array, or literal. */
+  /**
+   * Parse a JSON5 value: object, array, or literal.
+   * @returns {JSON5Value} - The parsed JSON5 value.
+   */
   parseValue(): JSON5Value {
     if (this.eof())
       throw new Error('Unexpected end of input when expecting a value');
@@ -101,9 +119,10 @@ export class JSON5Parser {
     }
   }
 
-  /***********************
-   * Object parsing
-   ***********************/
+  /**
+   * Parse a JSON5 object.
+   * @returns {JSON5Object} - The parsed JSON5 object.
+   */
   parseObject(): JSON5Object {
     // Consume the opening '{'
     if (this.text[this.pos] !== '{') throw new Error("Expected '{' for object");
@@ -168,8 +187,11 @@ export class JSON5Parser {
     return new JSON5Object(entries);
   }
 
-  /** Helper to parse the content of a quoted key.
-   *  Reads until an unescaped closing quote is encountered.
+  /**
+   * Helper to parse the content of a quoted key.
+   * Reads until an unescaped closing quote is encountered.
+   * @param {string} quote - The quote character.
+   * @returns {string} - The parsed key content.
    */
   parseStringContent(quote: string): string {
     const start = this.pos;
@@ -186,9 +208,10 @@ export class JSON5Parser {
     return this.text.substring(start, this.pos);
   }
 
-  /***********************
-   * Array parsing
-   ***********************/
+  /**
+   * Parse a JSON5 array.
+   * @returns {JSON5Array} - The parsed JSON5 array.
+   */
   parseArray(): JSON5Array {
     if (this.text[this.pos] !== '[') throw new Error("Expected '[' for array");
     this.pos++;
@@ -218,9 +241,10 @@ export class JSON5Parser {
     return new JSON5Array(elements);
   }
 
-  /***********************
-   * String literal parsing (for values)
-   ***********************/
+  /**
+   * Parse a string literal (for values).
+   * @returns {JSON5Literal} - The parsed JSON5 literal.
+   */
   parseStringLiteral(): JSON5Literal {
     const raw = this.parseStringRaw();
     const hasQuotes = raw[0] === '"' || raw[0] === "'";
@@ -231,7 +255,10 @@ export class JSON5Parser {
     );
   }
 
-  /** Parse a string literal (returns raw text including quotes). */
+  /**
+   * Parse a string literal (returns raw text including quotes).
+   * @returns {string} - The raw string literal.
+   */
   parseStringRaw(): string {
     const quote = this.text[this.pos];
     if (quote !== '"' && quote !== "'")
@@ -252,9 +279,10 @@ export class JSON5Parser {
     return this.text.substring(start, this.pos);
   }
 
-  /***********************
-   * Non-string literal parsing
-   ***********************/
+  /**
+   * Parse a non-string literal.
+   * @returns {JSON5Literal} - The parsed JSON5 literal.
+   */
   parseNonStringLiteral(): JSON5Literal {
     const start = this.pos;
     while (!this.eof() && /[^\s,\]}\[]/.test(this.text[this.pos]!)) {
