@@ -1,0 +1,21 @@
+name: Build, test and typecheck
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2
+      - name: Install dependencies
+        run: bun install
+      - name: Typecheck
+        run: bun typecheck
+      - name: Test
+        run: bun test --coverage --coverage-reporter=lcov
+      - name: Coveralls GitHub Action
+        uses: coverallsapp/github-action@v2.3.6
