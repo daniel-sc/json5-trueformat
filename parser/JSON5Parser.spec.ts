@@ -1,6 +1,3 @@
-/**
- * Bun Tests
- */
 import { expect, test } from 'bun:test';
 import { parseJSON5 } from '../index';
 import { JSON5Object } from '../model/JSON5Object';
