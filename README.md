@@ -1,5 +1,5 @@
 [![npm](https://img.shields.io/npm/v/json5-trueformat)](https://www.npmjs.com/package/json5-trueformat)
-[![Coverage Status](https://coveralls.io/repos/github/daniel-sc/json5-trueformat/badge.svg?branch=main)](https://coveralls.io/github/daniel-sc/json5-trueformat?branch=main)
+[![Coverage Status](https://coveralls.io/repos/github/daniel-sc/json5-trueformat/badge.svg?branch=master)](https://coveralls.io/github/daniel-sc/json5-trueformat?branch=main)
 
 # json5-trueformat
 
