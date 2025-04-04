@@ -24,4 +24,3 @@ export class JSON5Document {
     return this.pre + this.value.toString() + this.post;
   }
 }
-

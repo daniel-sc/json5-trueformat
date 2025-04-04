@@ -1,6 +1,3 @@
-/**
- * Bun Tests
- */
 import { expect, test } from 'bun:test';
 import { parseJSON5 } from '../index';
 import { JSON5Object } from '../model/JSON5Object';
@@ -39,9 +36,7 @@ test('Modification: Update a value in JSON5 Object', () => {
 }`;
   const doc = parseJSON5(input);
   // Assume doc.value is a JSON5Object.
-  const entry = (doc.value as JSON5Object).entries.find(
-    (e) => e instanceof JSON5ObjectEntry,
-  )!;
+  const entry = (doc.value as JSON5Object).entries.find((e) => e instanceof JSON5ObjectEntry)!;
   // If the value is a literal representing a string, update its raw value.
   if (entry.value instanceof JSON5Literal) {
     // Preserve surrounding whitespace; only update the content inside the quotes.

@@ -74,22 +74,14 @@ export class JSON5Parser {
   parseComment(): void {
     if (this.text[this.pos] === '/' && this.text[this.pos + 1] === '/') {
       this.pos += 2;
-      while (
-        !this.eof() &&
-        this.text[this.pos] !== '\n' &&
-        this.text[this.pos] !== '\r'
-      ) {
+      while (!this.eof() && this.text[this.pos] !== '\n' && this.text[this.pos] !== '\r') {
         this.pos++;
       }
     } else if (this.text[this.pos] === '/' && this.text[this.pos + 1] === '*') {
       this.pos += 2;
       while (
         !this.eof() &&
-        !(
-          this.text[this.pos] === '*' &&
-          this.pos + 1 < this.length &&
-          this.text[this.pos + 1] === '/'
-        )
+        !(this.text[this.pos] === '*' && this.pos + 1 < this.length && this.text[this.pos + 1] === '/')
       ) {
         this.pos++;
       }
@@ -104,8 +96,7 @@ export class JSON5Parser {
    * @returns {JSON5Value} - The parsed JSON5 value.
    */
   parseValue(): JSON5Value {
-    if (this.eof())
-      throw new Error('Unexpected end of input when expecting a value');
+    if (this.eof()) throw new Error('Unexpected end of input when expecting a value');
     const ch = this.text[this.pos];
     if (ch === '{') {
       return this.parseObject();
@@ -159,8 +150,7 @@ export class JSON5Parser {
       }
       // Capture any formatting between the key and the colon.
       const preColon = this.parseWS();
-      if (this.text[this.pos] !== ':')
-        throw new Error("Expected ':' in object entry");
+      if (this.text[this.pos] !== ':') throw new Error("Expected ':' in object entry");
       this.pos++;
       const postColon = this.parseWS();
       const value = this.parseValue();
@@ -170,19 +160,10 @@ export class JSON5Parser {
         comma = this.text[this.pos]!;
         this.pos++;
       }
-      const entry = new JSON5ObjectEntry(
-        keyQuote,
-        key,
-        preColon,
-        postColon,
-        value,
-        post,
-        comma,
-      );
+      const entry = new JSON5ObjectEntry(keyQuote, key, preColon, postColon, value, post, comma);
       entries.push(entry);
     }
-    if (this.text[this.pos] !== '}')
-      throw new Error("Expected '}' at end of object");
+    if (this.text[this.pos] !== '}') throw new Error("Expected '}' at end of object");
     this.pos++;
     return new JSON5Object(entries);
   }
@@ -235,8 +216,7 @@ export class JSON5Parser {
       const element = new JSON5ArrayElement(value, post, comma);
       elements.push(element);
     }
-    if (this.text[this.pos] !== ']')
-      throw new Error("Expected ']' at end of array");
+    if (this.text[this.pos] !== ']') throw new Error("Expected ']' at end of array");
     this.pos++;
     return new JSON5Array(elements);
   }
@@ -249,10 +229,7 @@ export class JSON5Parser {
     const raw = this.parseStringRaw();
     const hasQuotes = raw[0] === '"' || raw[0] === "'";
     const quotes = hasQuotes ? (raw[0] as '"' | "'") : '';
-    return new JSON5Literal(
-      quotes ? raw.substring(1, raw.length - 1) : raw,
-      quotes,
-    );
+    return new JSON5Literal(quotes ? raw.substring(1, raw.length - 1) : raw, quotes);
   }
 
   /**
@@ -261,8 +238,7 @@ export class JSON5Parser {
    */
   parseStringRaw(): string {
     const quote = this.text[this.pos];
-    if (quote !== '"' && quote !== "'")
-      throw new Error('Expected string literal');
+    if (quote !== '"' && quote !== "'") throw new Error('Expected string literal');
     const start = this.pos;
     this.pos++; // skip opening quote
     while (!this.eof()) {

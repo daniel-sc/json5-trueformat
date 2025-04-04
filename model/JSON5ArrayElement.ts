@@ -23,4 +23,3 @@ export class JSON5ArrayElement {
     return this.value.toString() + this.post + this.comma;
   }
 }
-

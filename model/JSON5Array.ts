@@ -18,4 +18,3 @@ export class JSON5Array {
     return '[' + this.elements.map((e) => e.toString()).join('') + ']';
   }
 }
-
