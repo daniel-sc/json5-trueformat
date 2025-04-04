@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test';
-import { parseJSON5 } from '../index';
+import { JSON5Document, parseJSON5 } from '../index';
 import { JSON5Object } from '../model/JSON5Object';
 import { JSON5ObjectEntry } from '../model/JSON5ObjectEntry';
 import { JSON5Literal } from '../model/JSON5Literal';
@@ -18,6 +18,36 @@ test('Round-trip: JSON5 Object with comments and whitespace', () => {
 }`;
   const doc = parseJSON5(input);
   expect(doc.toString()).toBe(input);
+});
+
+test('readme example', () => {
+  const input = `{
+  // This is a comment
+  key_without_quotes : "value with qutes"  ,
+  "key_with_quotes":'value with single quotes',
+}`;
+  const doc = parseJSON5(input);
+  expect(doc).toEqual(
+    new JSON5Document(
+      '',
+      new JSON5Object([
+        '\n  // This is a comment\n  ',
+        new JSON5ObjectEntry('', 'key_without_quotes', ' ', ' ', new JSON5Literal('value with qutes', '"'), '  ', ','),
+        '\n  ',
+        new JSON5ObjectEntry(
+          '"',
+          'key_with_quotes',
+          '',
+          '',
+          new JSON5Literal('value with single quotes', "'"),
+          '',
+          ',',
+        ),
+        '\n',
+      ]),
+      '',
+    ),
+  );
 });
 
 test('Round-trip: JSON5 Array with trailing commas', () => {

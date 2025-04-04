@@ -85,7 +85,9 @@ export class JSON5Object {
     if (previousEntry) {
       previousEntry.comma = ',';
     }
-    const isLastEntry = !this.entries.findLast((v, i): v is JSON5ObjectEntry => i > index && v instanceof JSON5ObjectEntry);
+    const isLastEntry = !this.entries.findLast(
+      (v, i): v is JSON5ObjectEntry => i > index && v instanceof JSON5ObjectEntry,
+    );
     if (!isLastEntry) {
       entry.comma = entry.comma || ',';
     }
