@@ -1,13 +1,13 @@
 {
   "name": "json5-trueformat",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "JSON/JSON5 parser that 100% retains all formatting for creating identical files on roundtrips",
   "main": "./dist/cjs/index.js",
-  "module": "./dist/esm/index.js",
+  "module": "./dist/esm/index.mjs",
   "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/esm/index.js",
+      "import": "./dist/esm/index.mjs",
       "require": "./dist/cjs/index.js",
       "types": "./dist/types/index.d.ts"
     }
@@ -15,7 +15,7 @@
   "license": "MIT",
   "scripts": {
     "build:types": "tsc --emitDeclarationOnly",
-    "build:esm": "bun build index.ts --outdir dist/esm --format=esm --dts",
+    "build:esm": "bun build index.ts --outfile=dist/esm/index.mjs --format=esm --dts",
     "build:cjs": "bun build index.ts --outdir dist/cjs --format=cjs",
     "test": "bun test --coverage",
     "format": "prettier --write .",
