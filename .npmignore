@@ -1,0 +1,10 @@
+.idea
+.vscode
+.github
+
+*.spec.ts
+*.spec.js
+
+*.tgz
+bun.lock
+.prettierrc
