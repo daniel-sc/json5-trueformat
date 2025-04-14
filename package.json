@@ -1,6 +1,6 @@
 {
   "name": "json5-trueformat",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "JSON/JSON5 parser that 100% retains all formatting for creating identical files on roundtrips",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.mjs",
