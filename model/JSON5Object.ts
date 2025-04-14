@@ -1,6 +1,11 @@
 import { JSON5ObjectEntry } from './JSON5ObjectEntry';
 import type { WhiteSpaceOrComment } from './whiteSpaceOrComment';
 import type { JSON5Value } from './JSON5Value';
+import { JSON5Literal } from './JSON5Literal';
+
+function coerce(value: JSON5Value | string | number | null, getQuote: () => '"' | "'" | ''): JSON5Value {
+  return typeof value === 'object' && value !== null ? value : JSON5Literal.fromPrimitive(value, getQuote());
+}
 
 /**
  * Represents a JSON5 object.
@@ -26,6 +31,37 @@ export class JSON5Object {
       }
     }
     return undefined;
+  }
+
+  /**
+   * Get all literals in the JSON5 object.
+   * @returns {Generator<JSON5Literal>} - A generator that yields JSON5 literals.
+   */
+  *literals(): Generator<JSON5Literal> {
+    for (const entry of this.entries) {
+      if (entry instanceof JSON5ObjectEntry) {
+        if (entry.value instanceof JSON5Literal) {
+          yield entry.value;
+        } else {
+          yield* entry.value.literals();
+        }
+      }
+    }
+  }
+
+  /**
+   * Set a value in the JSON5 object. Creates a new entry if the key does not exist.
+   * @param key
+   * @param value
+   */
+  setValue(key: string, value: JSON5Value | string | number | null): void {
+    const coercedValue = coerce(value, () => this.literals().find(() => true)?.quote ?? '"');
+    const entry = this.entries.find((e): e is JSON5ObjectEntry => e instanceof JSON5ObjectEntry && e.key === key);
+    if (entry) {
+      entry.value = coercedValue;
+    } else {
+      this.addKeyValue(key, coercedValue);
+    }
   }
 
   /**
@@ -101,16 +137,21 @@ export class JSON5Object {
    * @param value
    * @param options
    */
-  addKeyValue(key: string, value: JSON5Value, options?: { beforeKey?: string; afterKey?: string }): void {
+  addKeyValue(
+    key: string,
+    value: JSON5Value | string | number | null,
+    options?: { beforeKey?: string; afterKey?: string },
+  ): void {
+    const coercedValue = coerce(value, () => this.literals().find(() => true)?.quote ?? '"');
     const siblingObjectEntries = this.entries.filter((e) => e instanceof JSON5ObjectEntry);
     const similarEntry =
-      siblingObjectEntries.find((e) => e.value.constructor === value.constructor) ?? siblingObjectEntries.at(0);
+      siblingObjectEntries.find((e) => e.value.constructor === coercedValue.constructor) ?? siblingObjectEntries.at(0);
     const entry = new JSON5ObjectEntry(
       similarEntry?.keyQuote ?? '"',
       key,
       similarEntry?.preColon ?? '',
       similarEntry?.postColon ?? ' ',
-      value,
+      coercedValue,
       similarEntry?.post ?? '',
       '',
     );

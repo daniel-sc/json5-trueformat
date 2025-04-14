@@ -135,5 +135,76 @@ describe('JSON5Object', () => {
   "key2": "value2"
 }`);
     });
+    test('should coerce value to string if not JSON5Literal', () => {
+      const obj = new JSON5Object([
+        '\n  ',
+        new JSON5ObjectEntry('"', 'key1', '', ' ', new JSON5Literal('value1', '"'), '', ''),
+        '\n',
+      ]);
+      obj.addKeyValue('key2', 'value2');
+      expect(obj.toString()).toEqual(`{
+  "key1": "value1",
+  "key2": "value2"
+}`);
+    });
+  });
+
+  describe('literals', () => {
+    test('should return literals', () => {
+      const obj = new JSON5Object([
+        new JSON5ObjectEntry('"', 'key1', '', '', new JSON5Literal('value1', '"'), '', ','),
+        new JSON5ObjectEntry('"', 'key2', '', '', new JSON5Literal('value2', '"'), '', ','),
+      ]);
+      expect(obj.literals().toArray()).toEqual([new JSON5Literal('value1', '"'), new JSON5Literal('value2', '"')]);
+    });
+    test('should return nested literals', () => {
+      const obj = new JSON5Object([
+        new JSON5ObjectEntry('"', 'key1', '', '', new JSON5Literal('value1', '"'), '', ','),
+        new JSON5ObjectEntry(
+          '"',
+          'key2',
+          '',
+          '',
+          new JSON5Object([
+            new JSON5ObjectEntry('"', 'nestedKey', '', '', new JSON5Literal('nestedValue', '"'), '', ','),
+          ]),
+          '',
+          ',',
+        ),
+      ]);
+      expect(obj.literals().toArray()).toEqual([new JSON5Literal('value1', '"'), new JSON5Literal('nestedValue', '"')]);
+    });
+  });
+
+  describe('setValue', () => {
+    test('should set the value of a key', () => {
+      const obj = new JSON5Object([new JSON5ObjectEntry('"', 'key1', '', '', new JSON5Literal('value1', '"'), '', '')]);
+      obj.setValue('key1', new JSON5Literal('newValue1', '"'));
+      expect(obj.toString()).toEqual(`{"key1":"newValue1"}`);
+    });
+    test('should add a new key-value pair if the key does not exist', () => {
+      const obj = new JSON5Object([
+        '\n  ',
+        new JSON5ObjectEntry('"', 'key1', '', '', new JSON5Literal('value1', '"'), '', ''),
+        '\n',
+      ]);
+      obj.setValue('key2', new JSON5Literal('value2', '"'));
+      expect(obj.toString()).toEqual(`{
+  "key1":"value1",
+  "key2":"value2"
+}`);
+    });
+    test('should add new key-value pair with matching quotes', () => {
+      const obj = new JSON5Object([
+        '\n  ',
+        new JSON5ObjectEntry('"', 'key1', '', '', new JSON5Literal('value1', "'"), '', ''),
+        '\n',
+      ]);
+      obj.setValue('key2', 'value2');
+      expect(obj.toString()).toEqual(`{
+  "key1":'value1',
+  "key2":'value2'
+}`);
+    });
   });
 });
