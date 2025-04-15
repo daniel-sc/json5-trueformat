@@ -7,6 +7,40 @@ export class JSON5Literal {
     public quote: '"' | "'" | '',
   ) {}
 
+  /**
+   * Convert the JSON5 literal to its primitive value.
+   * Escape sequences are replaced with their corresponding characters.
+   */
+  toPrimitive(): string | number | boolean | null {
+    if (this.quote === '') {
+      if (this.raw === 'null') {
+        return null;
+      } else if (this.raw === 'true') {
+        return true;
+      } else if (this.raw === 'false') {
+        return false;
+      } else if (!isNaN(Number(this.raw))) {
+        return Number(this.raw);
+      }
+    }
+    return this.raw.replace(/\\(["'nrbft\\])/g, (_match, char: string) => {
+      switch (char) {
+        case 'n':
+          return '\n';
+        case 'r':
+          return '\r';
+        case 'b':
+          return '\b';
+        case 'f':
+          return '\f';
+        case 't':
+          return '\t';
+        default:
+          return char;
+      }
+    });
+  }
+
   toString(): string {
     return this.quote + this.raw + this.quote;
   }
