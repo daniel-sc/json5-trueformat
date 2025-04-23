@@ -159,8 +159,10 @@ export class JSON5Parser {
       if (!this.eof() && this.text[this.pos] === ',') {
         comma = this.text[this.pos]!;
         this.pos++;
+      } else {
+        this.pos -= post.length; // backtrack if no comma (the trailing ws is not part of the entry)
       }
-      const entry = new JSON5ObjectEntry(keyQuote, key, preColon, postColon, value, post, comma);
+      const entry = new JSON5ObjectEntry(keyQuote, key, preColon, postColon, value, comma ? post : '', comma);
       entries.push(entry);
     }
     if (this.text[this.pos] !== '}') throw new Error("Expected '}' at end of object");

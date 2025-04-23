@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { JSON5Object } from './JSON5Object';
 import { JSON5ObjectEntry } from './JSON5ObjectEntry';
 import { JSON5Literal } from './JSON5Literal';
+import { parseJSON5 } from '../index';
 
 describe('JSON5Object', () => {
   describe('getValue', () => {
@@ -189,6 +190,14 @@ describe('JSON5Object', () => {
         '\n',
       ]);
       obj.setValue('key2', new JSON5Literal('value2', '"'));
+      expect(obj.toString()).toEqual(`{
+  "key1":"value1",
+  "key2":"value2"
+}`);
+    });
+    test('should add a new key-value pair to parsed object if the key does not exist', () => {
+      const obj = parseJSON5(`{\n  "key1":"value1"\n}`).value as JSON5Object;
+      obj.setValue('key2', "value2");
       expect(obj.toString()).toEqual(`{
   "key1":"value1",
   "key2":"value2"
