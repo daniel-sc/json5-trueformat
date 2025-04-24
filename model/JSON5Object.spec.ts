@@ -197,7 +197,7 @@ describe('JSON5Object', () => {
     });
     test('should add a new key-value pair to parsed object if the key does not exist', () => {
       const obj = parseJSON5(`{\n  "key1":"value1"\n}`).value as JSON5Object;
-      obj.setValue('key2', "value2");
+      obj.setValue('key2', 'value2');
       expect(obj.toString()).toEqual(`{
   "key1":"value1",
   "key2":"value2"
@@ -214,6 +214,60 @@ describe('JSON5Object', () => {
   "key1":'value1',
   "key2":'value2'
 }`);
+    });
+    test('should format new attribute in empty sub object according to the parent object', () => {
+      const nestedObj = new JSON5Object([]);
+      const obj = new JSON5Object(['\n  ', new JSON5ObjectEntry('"', 'key1', ' ', ' ', nestedObj, '', ''), '\n']);
+      nestedObj.setValue('key2', 'value2');
+      expect(obj.toString()).toEqual(`{
+  "key1" : {
+    "key2" : "value2"
+  }
+}`);
+    });
+    test('should use non-standard line breaks', () => {
+      const obj = new JSON5Object([
+        '\r\n  ',
+        new JSON5ObjectEntry('"', 'key1', '', '', new JSON5Literal('value1', '"'), '', ','),
+        '\r\n',
+      ]);
+      obj.setValue('key2', new JSON5Literal('value2', '"'));
+      expect(obj.toString()).toEqual(`{\r\n  "key1":"value1",\r\n  "key2":"value2"\r\n}`);
+    });
+    test('should use non-standard line breaks for new attribute in empty sub object', () => {
+      const nestedObj = new JSON5Object([]);
+      const obj = new JSON5Object(['\r\n  ', new JSON5ObjectEntry('"', 'key1', ' ', ' ', nestedObj, '', ''), '\r\n']);
+      nestedObj.setValue('key2', 'value2');
+      expect(obj.toString()).toEqual(`{\r\n  "key1" : {\r\n    "key2" : "value2"\r\n  }\r\n}`);
+    });
+  });
+  describe('guessIndentation', () => {
+    test('should guess indentation for object with entry and indentation', () => {
+      const obj = new JSON5Object([
+        '\n  ',
+        new JSON5ObjectEntry('"', 'key1', '', '', new JSON5Literal('value1', '"'), '', ','),
+        '\n',
+      ]);
+      expect(obj.guessIndentation()).toEqual('  ');
+    });
+    test('should guess indentation for object with entry and empty indentation', () => {
+      const obj = new JSON5Object([
+        '\n',
+        new JSON5ObjectEntry('"', 'key1', '', '', new JSON5Literal('value1', '"'), '', ','),
+        '\n',
+      ]);
+      expect(obj.guessIndentation()).toBeUndefined();
+    });
+    test('should guess indentation for object with entry without line breaks', () => {
+      const obj = new JSON5Object([
+        new JSON5ObjectEntry('"', 'key1', '', '', new JSON5Literal('value1', '"'), '', ','),
+      ]);
+      expect(obj.guessIndentation()).toBeUndefined();
+    });
+    test('should guess indentation for nested empty object', () => {
+      const nestedObj = new JSON5Object([]);
+      new JSON5Object(['\n  ', new JSON5ObjectEntry('"', 'key1', ' ', ' ', nestedObj, '', ''), '\n']);
+      expect(nestedObj.guessIndentation()).toEqual('    ');
     });
   });
 });

@@ -2,6 +2,9 @@ import { JSON5ObjectEntry } from './JSON5ObjectEntry';
 import type { WhiteSpaceOrComment } from './whiteSpaceOrComment';
 import type { JSON5Value } from './JSON5Value';
 import { JSON5Literal } from './JSON5Literal';
+import { JSON5Document } from './JSON5Document';
+import { JSON5Array } from './JSON5Array';
+import { JSON5ArrayElement } from './JSON5ArrayElement';
 
 function coerce(value: JSON5Value | string | number | null, getQuote: () => '"' | "'" | ''): JSON5Value {
   return typeof value === 'object' && value !== null ? value : JSON5Literal.fromPrimitive(value, getQuote());
@@ -11,10 +14,23 @@ function coerce(value: JSON5Value | string | number | null, getQuote: () => '"' 
  * Represents a JSON5 object.
  */
 export class JSON5Object {
+  public parent?: JSON5ObjectEntry | JSON5ArrayElement | JSON5Document;
+
   /**
    * @param {(JSON5ObjectEntry | WhiteSpaceOrComment)[]} entries - The entries of the JSON5 object.
    */
-  constructor(public entries: (JSON5ObjectEntry | WhiteSpaceOrComment)[]) {}
+  constructor(public entries: (JSON5ObjectEntry | WhiteSpaceOrComment)[]) {
+    // Set/update parent for each object entry and its composite value
+    this.entries.forEach((e) => {
+      if (e instanceof JSON5ObjectEntry) {
+        e.parent = this;
+      }
+    });
+  }
+
+  getObjectEntries(): JSON5ObjectEntry[] {
+    return this.entries.filter((e) => e instanceof JSON5ObjectEntry);
+  }
 
   /**
    * Convert the object to a string.
@@ -51,6 +67,8 @@ export class JSON5Object {
 
   /**
    * Set a value in the JSON5 object. Creates a new entry if the key does not exist.
+   * This method tries to maintain the original formatting of the object.
+   *
    * @param key
    * @param value
    */
@@ -59,6 +77,9 @@ export class JSON5Object {
     const entry = this.entries.find((e): e is JSON5ObjectEntry => e instanceof JSON5ObjectEntry && e.key === key);
     if (entry) {
       entry.value = coercedValue;
+      if (coercedValue instanceof JSON5Object || coercedValue instanceof JSON5Array) {
+        coercedValue.parent = entry;
+      }
     } else {
       this.addKeyValue(key, coercedValue);
     }
@@ -92,8 +113,15 @@ export class JSON5Object {
         ? this.entries.findIndex((e) => e instanceof JSON5ObjectEntry && e.key === options.afterKey)
         : this.entries.findLastIndex((e) => e instanceof JSON5ObjectEntry);
       if (index === -1) {
+        const indent = this.guessIndentation();
         index = this.entries.length;
-        this.addEntryAtIndex(index, entry);
+        if (indent) {
+          const linebreak = this.guessLineBreak() ?? '\n';
+          this.entries.splice(index, 0, linebreak + indent);
+          this.addEntryAtIndex(index + 1, entry, linebreak + this.getParentObjectOrArray()?.guessIndentation());
+        } else {
+          this.addEntryAtIndex(index, entry);
+        }
       } else {
         const wsBeforeIndex =
           typeof this.entries[index - 1] === 'string' ? (this.entries[index - 1] as WhiteSpaceOrComment) : undefined;
@@ -127,6 +155,56 @@ export class JSON5Object {
     if (!isLastEntry) {
       entry.comma = entry.comma || ',';
     }
+    entry.parent = this;
+  }
+
+  getParentObjectOrArray(): JSON5Object | JSON5Array | undefined {
+    if (this.parent instanceof JSON5ObjectEntry) {
+      return this.parent?.parent;
+    } else if (this.parent instanceof JSON5ArrayElement) {
+      return this.parent?.parent;
+    }
+    return undefined;
+  }
+
+  getParentObject(): JSON5Object | undefined {
+    if (this.parent instanceof JSON5ObjectEntry) {
+      return this.parent?.parent;
+    } else if (this.parent instanceof JSON5ArrayElement) {
+      return this.parent?.parent?.getParentObject();
+    }
+    return undefined;
+  }
+
+  guessLineBreak(): string | undefined {
+    const withLinebreak = this.entries.filter((e) => typeof e === 'string').find((e) => e.match(/[\n\r]+/));
+    if (withLinebreak) {
+      const m = withLinebreak.match(/[\n\r]+/);
+      if (m) {
+        return m[0]!;
+      }
+    }
+    return this.getParentObjectOrArray()?.guessLineBreak();
+  }
+
+  /** guesses indentation of its entries */
+  guessIndentation(): string | undefined {
+    const first = this.entries[0];
+    if (typeof first === 'string') {
+      const m = first.match(/(?:\n|\r|\r\n|\n\r)+([\t ]+)/);
+      if (m) {
+        return m[1]!;
+      }
+    }
+    // compute from parents:
+    const parentObjectOrArray = this.getParentObjectOrArray();
+    const grandparentObjectOrArray = parentObjectOrArray?.getParentObjectOrArray();
+    if (parentObjectOrArray) {
+      const parentIndent = parentObjectOrArray.guessIndentation();
+      const grandparentIndent = grandparentObjectOrArray?.guessIndentation() ?? '';
+
+      return parentIndent !== undefined ? parentIndent + parentIndent.substring(grandparentIndent.length) : '';
+    }
   }
 
   /**
@@ -143,9 +221,14 @@ export class JSON5Object {
     options?: { beforeKey?: string; afterKey?: string },
   ): void {
     const coercedValue = coerce(value, () => this.literals().find(() => true)?.quote ?? '"');
-    const siblingObjectEntries = this.entries.filter((e) => e instanceof JSON5ObjectEntry);
+    const siblingObjectEntries = this.getObjectEntries();
     const similarEntry =
-      siblingObjectEntries.find((e) => e.value.constructor === coercedValue.constructor) ?? siblingObjectEntries.at(0);
+      siblingObjectEntries.find((e) => e.value.constructor === coercedValue.constructor) ??
+      siblingObjectEntries.at(0) ??
+      this.getParentObject()
+        ?.getObjectEntries()
+        .find((e) => e.value.constructor === coercedValue.constructor) ??
+      this.getParentObject()?.getObjectEntries().at(0);
     const entry = new JSON5ObjectEntry(
       similarEntry?.keyQuote ?? '"',
       key,
@@ -155,6 +238,9 @@ export class JSON5Object {
       similarEntry?.post ?? '',
       '',
     );
+    if (coercedValue instanceof JSON5Object || coercedValue instanceof JSON5Array) {
+      coercedValue.parent = entry;
+    }
     this.addEntry(entry, options);
   }
 }

@@ -1,5 +1,7 @@
 import type { JSON5Value } from './JSON5Value';
 import type { WhiteSpaceOrComment } from './whiteSpaceOrComment';
+import { JSON5Object } from './JSON5Object';
+import { JSON5Array } from './JSON5Array';
 
 /**
  * Represents a single object entry (key/value pair).
@@ -9,6 +11,8 @@ import type { WhiteSpaceOrComment } from './whiteSpaceOrComment';
  * - keySuffix: any formatting between the key and the colon.
  */
 export class JSON5ObjectEntry {
+  public parent?: JSON5Object;
+
   /**
    * @param {string} keyQuote - The quote character if quoted (empty string if not quoted).
    * @param {string} key - The actual key text (without quotes).
@@ -26,7 +30,11 @@ export class JSON5ObjectEntry {
     public value: JSON5Value,
     public post: WhiteSpaceOrComment,
     public comma: string,
-  ) {}
+  ) {
+    if (value instanceof JSON5Object || value instanceof JSON5Array) {
+      value.parent = this;
+    }
+  }
 
   /**
    * Convert the object entry to a string.

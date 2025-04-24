@@ -60,6 +60,12 @@ test('Round-trip: JSON5 Array with trailing commas', () => {
   expect(doc.toString()).toBe(input);
 });
 
+test('round trip windows line endings', () => {
+  const input = `{\r\n  key: "value"\r\n}`;
+  const doc = parseJSON5(input);
+  expect(doc.toString()).toEqual(input);
+});
+
 test('Modification: Update a value in JSON5 Object', () => {
   const input = `{
   key: "old value"
