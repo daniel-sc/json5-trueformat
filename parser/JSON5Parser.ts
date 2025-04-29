@@ -213,9 +213,9 @@ export class JSON5Parser {
         comma = this.text[this.pos] as ',';
         this.pos++;
       } else {
-        this.pos -= post.length;
+        this.pos -= post.length; // backtrack if no comma (the trailing ws is not part of the entry)
       }
-      const element = new JSON5ArrayElement(value, post, comma);
+      const element = new JSON5ArrayElement(value, comma ? post : '', comma);
       elements.push(element);
     }
     if (this.text[this.pos] !== ']') throw new Error("Expected ']' at end of array");

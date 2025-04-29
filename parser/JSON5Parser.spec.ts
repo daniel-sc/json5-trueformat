@@ -66,6 +66,18 @@ test('round trip windows line endings', () => {
   expect(doc.toString()).toEqual(input);
 });
 
+test('round trip with object in array', () => {
+  const input = `{
+    "key1": [
+      {
+        "key2": 2
+      }
+    ]
+}`;
+  const doc = parseJSON5(input);
+  expect(doc.toString()).toEqual(input);
+});
+
 test('Modification: Update a value in JSON5 Object', () => {
   const input = `{
   key: "old value"
